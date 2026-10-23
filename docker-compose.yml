@@ -1,13 +1,16 @@
-# Tav Calendar: point your Cloudflare Tunnel at http://localhost:3007
+# Tav Calendar production stack. On the VPS:
 #
-#   docker compose up -d --build      start / update
+#   bash update.sh                    pull the latest code, back up, rebuild, restart
 #   docker compose logs -f            watch logs
 #
-# Data (accounts, events, uploads) lives in ./pb_data. Back that folder up.
+# Needs a .env next to this file (see .env.example); data lives in ./pb_data.
+# Point your Cloudflare Tunnel at http://localhost:3007
 
 services:
   pocketbase:
-    build: ./pocketbase
+    build:
+      context: .
+      dockerfile: deploy/pocketbase.Dockerfile
     container_name: tavcal-web
     restart: unless-stopped
     ports:
@@ -31,7 +34,9 @@ services:
 
   # sends web push notifications for PocketBase; not reachable from outside
   push:
-    build: ./push
+    build:
+      context: .
+      dockerfile: deploy/push.Dockerfile
     container_name: tavcal-push
     restart: unless-stopped
     environment:
@@ -43,7 +48,9 @@ services:
   # Discord bot. Its token is set in the app (Admin -> Discord), not here.
   # Only connects out to Discord, so nothing extra is needed on the tunnel.
   discord:
-    build: ./discord
+    build:
+      context: .
+      dockerfile: deploy/discord.Dockerfile
     container_name: tavcal-discord
     restart: unless-stopped
     environment:

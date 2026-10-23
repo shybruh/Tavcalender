@@ -1,0 +1,4 @@
+# shell scripts must keep Unix line endings to run on the server
+*.sh text eol=lf
+Dockerfile text eol=lf
+*.Dockerfile text eol=lf

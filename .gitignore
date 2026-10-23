@@ -10,3 +10,4 @@ backend/LICENSE.md
 *.log
 dev-accounts.local.md
 release/
+backups/

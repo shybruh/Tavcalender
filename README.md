@@ -56,15 +56,18 @@ The PocketBase dashboard is at `/_/` (create a superuser the first time). You on
 
 ## Deploying to a VPS
 
-The VPS runs it with Docker; HTTPS comes from a Cloudflare Tunnel pointed at port 3007.
+The VPS runs a git checkout of this repo with Docker (everything, including the website build,
+happens inside Docker). HTTPS comes from a Cloudflare Tunnel pointed at port 3007.
+
+First time: clone, create `.env` from `.env.example`, run `bash update.sh --force`.
+After that, every update is:
 
 ```bash
-python scripts/make-bundle.py
+bash update.sh
 ```
 
-This builds the website and writes an upload-ready folder to `release/tavcal/` (also zipped as `release/tavcal.zip`): a `docker-compose.yml`, the two Dockerfiles, the app files and a `.env` with production push keys. The keys are generated once into `release/prod.env` and reused on later builds. Upload it, then follow `release/tavcal/DEPLOY.md` (source: `deploy/DEPLOY.md`), which boils down to `docker compose up -d --build`.
-
-To update: rebuild the bundle, upload it over the old folder (keeping `pb_data/`), and run `docker compose up -d --build` again. Migrations apply automatically.
+which pulls the latest commit, backs up the database, rebuilds and restarts.
+Full steps, rollback and notes: [deploy/DEPLOY.md](deploy/DEPLOY.md).
 
 ## Push notifications
 
