@@ -1,0 +1,13 @@
+{
+  "name": "tav-discord",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "start": "node src/index.js",
+    "test": "node --test test/*.test.js"
+  },
+  "dependencies": {
+    "chrono-node": "^2.10.3",
+    "discord.js": "^14.27.0"
+  }
+}

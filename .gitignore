@@ -1,0 +1,12 @@
+node_modules/
+.env
+pb_data/
+backend/pb_data/
+backend/pb_public/
+backend/pocketbase
+backend/pocketbase.exe
+backend/CHANGELOG.md
+backend/LICENSE.md
+*.log
+dev-accounts.local.md
+release/

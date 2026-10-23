@@ -1,0 +1,54 @@
+# Tav Calendar: point your Cloudflare Tunnel at http://localhost:3007
+#
+#   docker compose up -d --build      start / update
+#   docker compose logs -f            watch logs
+#
+# Data (accounts, events, uploads) lives in ./pb_data. Back that folder up.
+
+services:
+  pocketbase:
+    build: ./pocketbase
+    container_name: tavcal-web
+    restart: unless-stopped
+    ports:
+      - "3007:8090"
+    volumes:
+      - ./pb_data:/pb/pb_data
+    environment:
+      TZ: ${TZ:-UTC}
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      PUSH_SECRET: ${PUSH_SECRET}
+      PUSH_URL: http://push:8091/send
+      BOT_SECRET: ${BOT_SECRET}
+      BOT_URL: http://discord:8092
+    depends_on:
+      - push
+    healthcheck:
+      test: ["CMD", "wget", "-q", "--spider", "http://127.0.0.1:8090/api/health"]
+      interval: 30s
+      timeout: 5s
+      retries: 3
+
+  # sends web push notifications for PocketBase; not reachable from outside
+  push:
+    build: ./push
+    container_name: tavcal-push
+    restart: unless-stopped
+    environment:
+      VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
+      VAPID_PRIVATE_KEY: ${VAPID_PRIVATE_KEY}
+      VAPID_SUBJECT: ${VAPID_SUBJECT:-mailto:admin@example.com}
+      PUSH_SECRET: ${PUSH_SECRET}
+
+  # Discord bot. Its token is set in the app (Admin -> Discord), not here.
+  # Only connects out to Discord, so nothing extra is needed on the tunnel.
+  discord:
+    build: ./discord
+    container_name: tavcal-discord
+    restart: unless-stopped
+    environment:
+      TZ: ${TZ:-UTC}
+      PB_URL: http://pocketbase:8090
+      BOT_SECRET: ${BOT_SECRET}
+    depends_on:
+      - pocketbase

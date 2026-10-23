@@ -1,0 +1,43 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+    <title>Tav Calendar</title>
+    <meta name="description" content="A shared calendar for friends: plans, notes and reminders." />
+    <link rel="icon" href="/favicon.ico" sizes="48x48" />
+    <link rel="icon" href="/icon.svg" sizes="any" type="image/svg+xml" />
+    <link rel="apple-touch-icon" href="/apple-touch-icon-180x180.png" />
+    <meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)" />
+    <meta name="theme-color" content="#0a0a0a" media="(prefers-color-scheme: dark)" />
+    <meta name="apple-mobile-web-app-capable" content="yes" />
+    <meta name="mobile-web-app-capable" content="yes" />
+    <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+    <meta name="apple-mobile-web-app-title" content="Tav" />
+    <script>
+      // Keep the phone layout even when Chrome's "Desktop site" mode is on.
+      // That mode fakes a ~980px wide viewport, but screen.width still reports the real
+      // device width, so a touch phone with a much wider viewport is in desktop mode:
+      // switch breakpoints off (see @custom-variant in index.css) and zoom back to phone size.
+      ;(function () {
+        var root = document.documentElement
+        function apply() {
+          var touch = window.matchMedia("(pointer: coarse)").matches || navigator.maxTouchPoints > 0
+          var phone = touch && Math.min(screen.width, screen.height) < 768
+          var inflated = window.innerWidth > screen.width * 1.15
+          var force = phone && inflated
+          root.classList.toggle("force-mobile", force)
+          root.style.zoom = force ? String(window.innerWidth / screen.width) : ""
+        }
+        apply()
+        window.addEventListener("resize", apply)
+        window.addEventListener("orientationchange", apply)
+        window.__tavApplyLayout = apply
+      })()
+    </script>
+  </head>
+  <body>
+    <div id="root"></div>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
