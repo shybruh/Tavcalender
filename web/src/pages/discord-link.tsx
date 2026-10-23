@@ -1,4 +1,4 @@
-import { useState } from "react"
+import { useEffect, useRef, useState } from "react"
 import { Link, useSearchParams } from "react-router"
 import { useQuery } from "@tanstack/react-query"
 import { CheckCircle2Icon, LinkIcon, XCircleIcon } from "lucide-react"
@@ -37,6 +37,15 @@ export function DiscordLinkPage() {
     }
   }
 
+  // someone who just signed up from this page clearly wants this link: skip the confirm step
+  const auto = params.get("auto") === "1"
+  const autoStarted = useRef(false)
+  useEffect(() => {
+    if (!auto || !user || !info.data?.valid || autoStarted.current) return
+    autoStarted.current = true
+    claim()
+  }, [auto, user, info.data?.valid]) // eslint-disable-line react-hooks/exhaustive-deps
+
   let body
   if (!token || info.data?.valid === false) {
     body = (
@@ -50,6 +59,14 @@ export function DiscordLinkPage() {
     )
   } else if (info.isLoading) {
     body = <Skeleton className="h-48 rounded-xl" />
+  } else if (auto && user && (state === "idle" || state === "busy")) {
+    body = (
+      <Card className="text-center">
+        <CardHeader className="items-center">
+          <CardTitle>Linking {discordName}…</CardTitle>
+        </CardHeader>
+      </Card>
+    )
   } else if (state === "done") {
     body = (
       <Card className="text-center">
@@ -78,7 +95,7 @@ export function DiscordLinkPage() {
         <CardFooter className="flex-col gap-2">
           <Link to={`/login?next=${encodeURIComponent(here)}`} className={buttonVariants({ className: "h-10 w-full" })}>I have an account</Link>
           <Link
-            to={`/signup?next=${encodeURIComponent(here)}&name=${encodeURIComponent(info.data?.discord_name ?? "")}`}
+            to={`/signup?next=${encodeURIComponent(`${here}&auto=1`)}&name=${encodeURIComponent(info.data?.discord_name ?? "")}`}
             className={buttonVariants({ variant: "outline", className: "h-10 w-full" })}
           >
             I'm new here
