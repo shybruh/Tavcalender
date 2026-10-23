@@ -1,0 +1,9 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 512 512">
+  <!-- Discord crops avatars to a circle, so: full-bleed background, mark kept inside the circle -->
+  <rect width="512" height="512" fill="#18181b"/>
+  <g fill="none" stroke="#fafafa" stroke-width="30" stroke-linecap="round" stroke-linejoin="round">
+    <rect x="136" y="160" width="240" height="220" rx="36"/>
+    <path d="M136 232h240"/>
+    <path d="M202 128v60M310 128v60"/>
+  </g>
+</svg>
