@@ -29,6 +29,7 @@ cronAdd("tav_reminders", "* * * * *", () => {
       body,
       url: eventId ? `/event/${eventId}` : "/reminders",
       kind: "reminder",
+      discord_channel: r.getString("discord_channel"),
     })
     r.set("sent", true)
     $app.save(r)

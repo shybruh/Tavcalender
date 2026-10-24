@@ -15,7 +15,8 @@ import { ApiError, NotLinkedError, bot } from "./api.js"
 import { definitions, onAutocomplete, onCommand, onRsvpButton } from "./commands.js"
 import { handlePlanInteraction, postedByBot } from "./plan.js"
 import { TZ } from "./time.js"
-import { linkButton, notLinkedMessage, rsvpButtons } from "./ui.js"
+import { notLinkedMessage, rsvpButtons } from "./ui.js"
+import { deliverDm } from "./deliver.js"
 
 const { BOT_SECRET = "", BOT_PORT = "8092", HOST = "127.0.0.1" } = process.env
 if (!BOT_SECRET) {
@@ -118,20 +119,6 @@ async function onInteraction(interaction) {
 
 // ---- internal HTTP API for PocketBase -----------------------------------------------------
 
-const EMOJI = { invite: "✉️", reminder: "⏰" }
-
-async function dm(body) {
-  const user = await client.users.fetch(body.discord_id)
-  const embed = new EmbedBuilder()
-    .setColor(0x8b5cf6)
-    .setTitle(`${EMOJI[body.kind] ?? "🔔"} ${body.title}`.slice(0, 256))
-  if (body.body) embed.setDescription(body.body.slice(0, 2000))
-  const components = body.kind === "invite" && body.event_id
-    ? [rsvpButtons(body.event_id, body.url)]
-    : body.url ? [linkButton("Open", body.url)] : []
-  await user.send({ embeds: [embed], components })
-}
-
 async function announce(body) {
   if (postedByBot.has(body.event_id)) return // already posted by /plan in this channel
   const channel = await client.channels.fetch(body.channel_id)
@@ -158,10 +145,11 @@ http.createServer((req, res) => {
     try { body = JSON.parse(raw || "{}") } catch { return reply(400, { error: "invalid json" }) }
     if (!client?.isReady()) return reply(503, { error: "bot not connected" })
     try {
-      if (req.url === "/dm") await dm(body)
+      let via = ""
+      if (req.url === "/dm") via = await deliverDm(client, body, log)
       else if (req.url === "/announce") await announce(body)
       else return reply(404, { error: "not found" })
-      reply(200, { ok: true })
+      reply(200, { ok: true, via })
     } catch (err) {
       // e.g. the user has DMs from server members turned off
       log(`${req.url} failed`, err.message)

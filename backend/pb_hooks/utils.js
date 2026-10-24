@@ -28,6 +28,7 @@ function notify(app, userIds, data, exceptId) {
     rec.set("url", data.url || "/")
     rec.set("kind", data.kind || "info")
     rec.set("read", false)
+    if (data.discord_channel) rec.set("discord_channel", data.discord_channel)
     try {
       app.save(rec)
     } catch (err) {
@@ -199,13 +200,16 @@ function botPost(app, path, body) {
   const base = $os.getenv("BOT_URL")
   if (!secret || !base) return
   try {
-    $http.send({
+    const res = $http.send({
       url: base.replace(/\/+$/, "") + path,
       method: "POST",
-      timeout: 5,
+      timeout: 10,
       headers: { "content-type": "application/json", "x-bot-secret": secret },
       body: JSON.stringify(body),
     })
+    if (res.statusCode !== 200) {
+      app.logger().warn("discord bot call failed", "path", path, "status", res.statusCode, "body", toString(res.body))
+    }
   } catch (err) {
     app.logger().warn("discord bot unreachable", "path", path, "error", String(err))
   }
@@ -231,6 +235,8 @@ function sendDiscord(app, notification) {
     body: notification.getString("body"),
     url: appUrl(app) + path,
     event_id: m ? m[1] : "",
+    // where to ping them if the DM is refused (set for reminders made with /remind)
+    channel_id: notification.getString("discord_channel"),
   })
 }
 

@@ -73,8 +73,11 @@ async function remind(interaction) {
   if (!when) return interaction.reply({ content: `Couldn't work out when “${text}” is. Try “in 2 hours” or “fri 6pm”.`, flags: MessageFlags.Ephemeral })
   if (when < new Date(Date.now() - 60000)) return interaction.reply({ content: "That's in the past.", flags: MessageFlags.Ephemeral })
   const what = interaction.options.getString("what", true)
-  await api.create("reminders", { user: api.user.id, title: what, remind_at: toPb(when) })
-  return interaction.reply({ content: `⏰ Got it. I'll remind you ${discordTime(when, "F")} (${discordTime(when, "R")}): **${what}**`, flags: MessageFlags.Ephemeral })
+  // remember the channel: if your DMs are closed, the reminder pings you here instead
+  const channel = interaction.guildId ? interaction.channelId : ""
+  await api.create("reminders", { user: api.user.id, title: what, remind_at: toPb(when), discord_channel: channel })
+  const where = channel ? "I'll DM you, or ping you in this channel if I can't" : "I'll DM you"
+  return interaction.reply({ content: `⏰ Got it. ${where} ${discordTime(when, "F")} (${discordTime(when, "R")}): **${what}**`, flags: MessageFlags.Ephemeral })
 }
 
 /** Your own plans: what you made, what you're invited to, and what you said yes/maybe to. */

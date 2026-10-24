@@ -226,7 +226,7 @@ test("discord bot flows", { skip: !run && "set PB_URL, BOT_SECRET, TEST_BOB, TES
   await t.test("/remind creates a reminder", async () => {
     const i = fake("command", { options: { command: "remind", when: "in 3 hours", what: "bot test reminder" } })
     await onCommand(i)
-    assert.match(i.out.replies[0].content, /I'll remind you/)
+    assert.match(i.out.replies[0].content, /I'll DM you/)
     const r = await pb(`/api/collections/reminders/records?filter=${encodeURIComponent('title="bot test reminder"')}`, { token: bob.token })
     assert.equal(r.items.length, 1)
     const at = new Date(r.items[0].remind_at.replace(" ", "T"))

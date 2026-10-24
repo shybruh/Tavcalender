@@ -11,3 +11,5 @@ backend/LICENSE.md
 dev-accounts.local.md
 release/
 backups/
+# local editor / assistant settings
+.claude/

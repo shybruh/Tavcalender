@@ -1,4 +1,4 @@
-// Date helpers. Everything is in the server's timezone (TZ env, e.g. Indian/Maldives),
+// Date helpers. Everything is in the server's timezone (TZ env, e.g. Europe/London),
 // matching the times used in notification text.
 import * as chrono from "chrono-node"
 

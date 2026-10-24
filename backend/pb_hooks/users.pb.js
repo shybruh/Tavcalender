@@ -1,13 +1,18 @@
 /// <reference path="../pb_data/types.d.ts" />
 
 // Signup approval flow:
-//  - the very first user becomes an approved admin
+//  - the first admin is created automatically: whoever signs up with ADMIN_EMAIL (env) while
+//    there's no admin yet, or, if ADMIN_EMAIL isn't set, the very first user
 //  - everyone else starts as a pending member and the admins get notified
 //  - the user is notified once an admin approves them
 
 onRecordCreate((e) => {
-  const isFirst = e.app.countRecords("users") === 0
-  if (isFirst) {
+  const adminEmail = ($os.getenv("ADMIN_EMAIL") || "").trim().toLowerCase()
+  const becomesAdmin = adminEmail
+    ? e.record.getString("email").trim().toLowerCase() === adminEmail &&
+      e.app.countRecords("users", $dbx.hashExp({ role: "admin" })) === 0
+    : e.app.countRecords("users") === 0
+  if (becomesAdmin) {
     e.record.set("role", "admin")
     e.record.set("status", "approved")
   } else {

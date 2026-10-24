@@ -1,6 +1,6 @@
 # Tav Calendar
 
-A shared calendar for a group of friends. People sign up, an admin approves them and picks which calendars they can **view** or **edit**, and everyone plans events, RSVPs, keeps shared notes and sets personal reminders. Mobile-first, installable as a PWA, with push notifications.
+A self-hosted shared calendar for a group of friends. People sign up and an admin lets them in; then everyone has their own calendar, adds friends (labelled friend / close friend / family / partner), makes groups, and chooses per plan who can see it. Everyone else just sees you as busy. Invites with "are you free?", RSVPs, shared notes, personal reminders, and an optional Discord bot for making plans without opening the app. Mobile-first, installable as a PWA, with push notifications.
 
 **Stack:** React + Vite + shadcn/ui (Base UI) + Tailwind v4 · PocketBase (auth, DB, realtime, JS hooks, cron) · a tiny Node service for Web Push.
 
@@ -9,12 +9,12 @@ web/       React app (builds into backend/pb_public, served by PocketBase)
 backend/   PocketBase migrations (schema + access rules) and hooks
 push/      Web Push sender (PocketBase's JS runtime can't do push encryption)
 discord/   Discord bot (discord.js); `npm test` drives its commands against a running dev server
-deploy/    Dockerfiles + Caddyfile
+deploy/    Dockerfiles + self-hosting guide
 ```
 
 ## How it works
 
-- **Signup → approval.** The first account ever created becomes the site admin. Everyone after that starts as `pending`; admins get a notification and approve them in **Admin → Sign-ups**. The pending screen flips to the app live once approved. That's the admin's only job: they have no access to anyone's plans, friends or groups.
+- **Signup → approval.** The first admin is whoever signs up with `ADMIN_EMAIL` (set in `.env`), or, if that's empty, the very first account. Everyone after that starts as `pending`; admins get a notification and approve them in **Admin → Sign-ups**. The pending screen flips to the app live once approved. That's the admin's only job: they have no access to anyone's plans, friends or groups.
 - **Your calendar.** Everyone gets their own calendar automatically, and every event lives there. When you add one you choose who sees it:
   **Private** · **Partner** · **Close friends** · **Family** · **Friends** (everyone you're connected with) · **Groups** (tick one or more, or "Select all").
   Anyone you're connected with who isn't in that audience just sees you as **busy** for that time, with no details.
@@ -54,19 +54,24 @@ Or `cd web && npm run build` and open http://localhost:8090, which is how produc
 
 The PocketBase dashboard is at `/_/` (create a superuser the first time). You only need it for backups or poking at data. Day-to-day admin happens in the app.
 
-## Deploying to a VPS
+## Self-hosting
 
-The VPS runs a git checkout of this repo with Docker (everything, including the website build,
-happens inside Docker). HTTPS comes from a Cloudflare Tunnel pointed at port 3007.
-
-First time: clone, create `.env` from `.env.example`, run `bash update.sh --force`.
-After that, every update is:
+Everything runs with Docker from a git checkout (the website is built inside Docker too).
+You need a Linux server with Docker and git, and HTTPS in front of it (a reverse proxy or a
+Cloudflare Tunnel pointed at port 3007).
 
 ```bash
-bash update.sh
+git clone https://github.com/<you>/Tavcalender.git ~/tavcal && cd ~/tavcal
+cp .env.example .env    # fill in keys, secrets, TZ and ADMIN_EMAIL
+bash update.sh --force
 ```
 
-which pulls the latest commit, backs up the database, rebuilds and restarts.
+Then sign up with your `ADMIN_EMAIL`, and you're the admin. Every later update is `bash update.sh`
+(pull, back up the database, rebuild, restart). Your data and `.env` stay on your server.
+
+The Discord bot is optional and uses **your own** bot: create one in the Discord developer
+portal and paste its ID and token in the app under **Admin → Discord**.
+
 Full steps, rollback and notes: [deploy/DEPLOY.md](deploy/DEPLOY.md).
 
 ## Push notifications
@@ -81,3 +86,7 @@ Full steps, rollback and notes: [deploy/DEPLOY.md](deploy/DEPLOY.md).
 - No recurring events yet. Birthdays have to be added per year.
 - Logging out removes that device's push subscription.
 - Password reset emails need SMTP set up in the PocketBase dashboard (Settings → Mail settings).
+
+## License
+
+[MIT](LICENSE)

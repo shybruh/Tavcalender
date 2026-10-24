@@ -19,6 +19,7 @@ services:
       - ./pb_data:/pb/pb_data
     environment:
       TZ: ${TZ:-UTC}
+      ADMIN_EMAIL: ${ADMIN_EMAIL:-}
       VAPID_PUBLIC_KEY: ${VAPID_PUBLIC_KEY}
       PUSH_SECRET: ${PUSH_SECRET}
       PUSH_URL: http://push:8091/send
